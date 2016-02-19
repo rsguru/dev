@@ -1,0 +1,136 @@
+#######################################################################
+# Test for copying block of size 4;
+#######################################################################
+	.pos 0
+main:	irmovq Stack, %rsp  	# Set up stack pointer
+
+	# Set up arguments for copy function and then invoke it
+	irmovq $4, %rdx		# src and dst have 4 elements
+	irmovq dest, %rsi	# dst array
+	irmovq src, %rdi	# src array
+	call ncopy		 
+	halt			# should halt with num nonzeros in %rax
+StartFun:
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Include your name and ID here.
+# Renato Scheuer
+# rs538
+#
+# Describe how and why you modified the baseline code.
+#
+# 1. replace all addq with iaddq e did not use irmovq;
+# 2. unrolled loop (copy 4 elements each loop);
+# 3. alternated using rsi and rdi to avoid data dependencies and bubbles.
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+	# Loop header
+	xorq %rax,%rax		# count = 0;
+	andq %rdx,%rdx		# len <= 0?
+	jle Done		# if so, goto Done:
+	iaddq $-4, %rdx         # len = len -4
+	jl tail
+
+Loop:	mrmovq (%rbx), %rsi	# read val from src...
+	mrmovq 4(%rbp), %rdi    # read val from src +4
+	rmmovq %rsi, (%rcx)	# store src[0] to dst
+	andq %rsi, %rsi		# src[0] > 0
+	jle P0  		# if so, goto P0:
+	iaddq $1, %rax		# count++
+
+P0:     rmmovq %rdi, 4(%rcx)    # store src[1] in dest[1]
+        andq %rdi, %rdi         # src[1] > 0 
+        jle P1                  # No ? get the next element
+        iaddq $1, %rax          # count++
+
+P1:     mrmovq 8(%rbx), %rsi    # read val from src +8
+        mrmovq 12(%rbx), %rdi   # read val from src +12
+        rmmovq %rsi, 8(%rcx)     # store src[2] in dest[2]
+        andq %rsi, %rsi         # src[2] > 0 
+        jle P2                  # No ? get the next element
+        iaddq $1, %rax          # count++
+  
+P2:
+        rmmovq %rdi, 12(%rcx)   # store src[3] in dest[3]
+        andq %rdi, %rdi         # src[3] > 0 
+        jle P3                  # No ? get the next element
+        iaddq $1, %rax          # count++
+
+P3: 
+        iaddq $16, %rbx       # goto next four positions of src
+        iaddq $16, %rcx       # goto next four positions of dest
+        iaddq $-4, %rdx       # len = len - 4
+        jge Loop              # if four left, do again
+
+        
+#Npos:	irmovq $1, %r10
+#	subq %r10, %rdx		# len--
+#	irmovq $8, %r10
+#	iaddq %r10, %rdi		# src++
+#	iaddq %r10, %rsi		# dst++
+#	andq %rdx,%rdx		# len > 0?
+#	jg Loop			# if so, goto Loop:
+
+tail:   iaddq $4, %rdx          #get actual len
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */
+EndFun:
+
+###############################
+# Source and destination blocks 
+###############################
+	.align 8
+src:
+	.quad -1
+	.quad 2
+	.quad 3
+	.quad -4
+	.quad 0xbcdefa # This shouldn't get moved
+
+	.align 16
+Predest:
+	.quad 0xbcdefa
+dest:
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+Postdest:
+	.quad 0xdefabc
+
+.align 8
+# Run time stack
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+
+Stack:

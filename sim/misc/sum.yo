@@ -1,0 +1,73 @@
+                            | #Name: Renato Scheuer
+                            | # lab4 Archlab 02/16/2016
+                            | 
+                            | # Execution begins at address 0 
+0x000:                      |         .pos 0
+0x000: 30f40002000000000000 |         irmovq stack, %rsp      # Set up stack pointer
+0x00a: 804800000000000000   |         call main               # Execute main program
+0x013: 00                   |         halt                    # Terminate program 
+                            | 
+                            | # Array of 4 elements
+                            | #        .align 8
+                            | #array:  .quad 0x000d000d000d
+                            | #        .quad 0x00c000c000c0
+                            | #        .quad 0x0b000b000b00
+                            | #        .quad 0xa000a000a000
+                            | 
+                            | #main:   irmovq array,%rdi
+                            | #        irmovq $4,%rsi
+                            | #        call sum                # sum(array, 4)
+                            | 
+                            | # Sample linked list
+0x018:                      | .align 8
+0x018:                      | ele1:
+0x018: 0a00000000000000     | 	.quad 0x00a
+0x020: 2800000000000000     | 	.quad ele2
+0x028:                      | ele2:
+0x028: b000000000000000     | 	.quad 0x0b0
+0x030: 3800000000000000     | 	.quad ele3
+0x038:                      | ele3:
+0x038: 000c000000000000     | 	.quad 0xc00
+0x040: 0000000000000000     | 	.quad 0
+                            | 
+                            | 
+0x048:                      | main:   #irmovq array,%rdi
+0x048: 30f60400000000000000 |         irmovq $4,%rsi
+0x052: 805b00000000000000   |         call sum_list                # sum(array, 4)
+                            | 
+                            | 
+                            | # Sum_list from example.c
+0x05b:                      | sum_list:
+0x05b: a05f                 | 	pushq	%rbp
+0x05d: 6300                 | 	xorq	%rax, %rax  #added 
+0x05f: 2045                 | 	rrmovq	%rsp, %rbp
+0x061: 4075e8ffffffffffffff | 	rmmovq	%rdi, -24(%rbp)
+                            | 	#movq	$0, -8(%rbp)
+0x06b: 70b200000000000000   | 	jmp	L2
+0x074:                      | L3:
+0x074: 5005e8ffffffffffffff | 	mrmovq	-24(%rbp), %rax
+0x07e: 50000000000000000000 | 	mrmovq	(%rax), %rax
+0x088: 5035f8ffffffffffffff | 	mrmovq	-8(%rbp), %rbx
+                            | 	#addq	%rax, -8(%rbp)
+0x092: 6003                 | 	addq	%rax, %rbx
+0x094: 5005e8ffffffffffffff | 	mrmovq	-24(%rbp), %rax
+0x09e: 50000800000000000000 | 	mrmovq	8(%rax), %rax
+0x0a8: 4005e8ffffffffffffff | 	rmmovq	%rax, -24(%rbp)
+0x0b2:                      | L2:
+                            | 	#cmpq	$0, -24(%rbp)
+                            | 	
+0x0b2: 747400000000000000   | 	jne	L3
+0x0bb: 5005f8ffffffffffffff | 	mrmovq	-8(%rbp), %rax
+                            | 
+                            | 
+0x0c5: b05f                 | 	popq	%rbp
+0x0c7: 90                   | 	ret
+                            | 
+0x200:                      | .pos 0x200
+0x200:                      | stack:
+                            | 
+                            | #	.cfi_endproc
+                            | #.LFE0:
+                            | #	.size	sum_list, .-sum_list
+                            | #	.globl	rsum_list
+                            | #	.type	rsum_list, @function

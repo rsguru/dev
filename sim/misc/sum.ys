@@ -1,0 +1,73 @@
+#Name: Renato Scheuer
+# lab4 Archlab 02/16/2016
+
+# Execution begins at address 0 
+        .pos 0
+        irmovq stack, %rsp      # Set up stack pointer
+        call main               # Execute main program
+        halt                    # Terminate program 
+
+# Array of 4 elements
+#        .align 8
+#array:  .quad 0x000d000d000d
+#        .quad 0x00c000c000c0
+#        .quad 0x0b000b000b00
+#        .quad 0xa000a000a000
+
+#main:   irmovq array,%rdi
+#        irmovq $4,%rsi
+#        call sum                # sum(array, 4)
+
+# Sample linked list
+.align 8
+ele1:
+	.quad 0x00a
+	.quad ele2
+ele2:
+	.quad 0x0b0
+	.quad ele3
+ele3:
+	.quad 0xc00
+	.quad 0
+
+
+main:   #irmovq array,%rdi
+        irmovq $4,%rsi
+        call sum_list                # sum(array, 4)
+
+
+# Sum_list from example.c
+sum_list:
+	pushq	%rbp
+	xorq	%rax, %rax  #added 
+	rrmovq	%rsp, %rbp
+	rmmovq	%rdi, -24(%rbp)
+	#movq	$0, -8(%rbp)
+	jmp	L2
+L3:
+	mrmovq	-24(%rbp), %rax
+	mrmovq	(%rax), %rax
+	mrmovq	-8(%rbp), %rbx
+	#addq	%rax, -8(%rbp)
+	addq	%rax, %rbx
+	mrmovq	-24(%rbp), %rax
+	mrmovq	8(%rax), %rax
+	rmmovq	%rax, -24(%rbp)
+L2:
+	#cmpq	$0, -24(%rbp)
+	
+	jne	L3
+	mrmovq	-8(%rbp), %rax
+
+
+	popq	%rbp
+	ret
+
+.pos 0x200
+stack:
+
+#	.cfi_endproc
+#.LFE0:
+#	.size	sum_list, .-sum_list
+#	.globl	rsum_list
+#	.type	rsum_list, @function

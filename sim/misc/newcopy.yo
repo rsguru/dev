@@ -1,0 +1,59 @@
+0x000:                      | .pos 0
+0x000: 30f40001000000000000 | init: 			irmovq Stack, %rsp	 	# set up stack pointer 
+0x00a: 30f50001000000000000 | 			irmovq Stack, %rbp 		# set up base pointer 
+0x014: 805000000000000000   | 			call Main 				# execute main program 
+0x01d: 00                   | 			halt 					# terminate program 
+                            |  
+0x020:                      | 			.align 4
+                            | # Source block
+0x020:                      | src:		
+0x020: 0a00000000000000     | 			.quad 0x000a
+0x028: b000000000000000     | 			.quad 0x00b0
+0x030: 000c000000000000     | 			.quad 0x0c00
+                            |  
+                            | # Destination block
+0x038:                      | dest:		
+0x038: 1101000000000000     | 			.quad 0x111
+0x040: 2202000000000000     | 			.quad 0x222
+0x048: 3303000000000000     | 			.quad 0x333
+                            |  
+0x050: a05f                 | Main: 		pushq %rbp 
+0x052: 2045                 | 			rrmovq %rsp,%rbp
+0x054: 30f00300000000000000 | 			irmovq $3,%rax
+0x05e: a00f                 | 			pushq %rax				# push 3
+0x060: 30f03800000000000000 | 			irmovq dest,%rax
+0x06a: a00f                 | 			pushq %rax 				# push dest
+0x06c: 30f02000000000000000 | 			irmovq src,%rax
+0x076: a00f                 | 			pushq %rax				# push src
+0x078: 808600000000000000   | 			call copy_block			# copy_block(src, dest, 3) 
+0x081: 2054                 | 			rrmovq %rbp,%rsp
+0x083: b05f                 | 			popq %rbp
+0x085: 90                   | 			ret
+                            |  
+                            | # int copy_block(int *src, int *dest, int len)
+0x086: a05f                 | copy_block: pushq %rbp 
+0x088: 2045                 | 			rrmovq %rsp,%rbp
+0x08a: 50250800000000000000 | 			mrmovq 8(%rbp),%rdx 	# rdx = src
+0x094: 50150c00000000000000 | 			mrmovq 12(%rbp),%rcx	# rcx = dest
+0x09e: 50351000000000000000 | 			mrmovq 16(%rbp),%rbx	# rbx = 3
+0x0a8: 6300                 | 			xorq %rax,%rax			# rax = 0
+0x0aa: 6233                 | 			andq %rbx,%rbx			# test rbx
+0x0ac: 73ee00000000000000   | 			je End
+0x0b5: 50620000000000000000 | loop:		mrmovq (%rdx),%rsi
+0x0bf: 40610000000000000000 | 			rmmovq %rsi,(%rcx)
+0x0c9: 6360                 | 			xorq %rsi,%rax 			# rax ^= rsi
+0x0cb: 30f60400000000000000 | 			irmovq $4,%rsi
+0x0d5: 6062                 | 			addq %rsi,%rdx 			# rdx -= 4
+0x0d7: 6061                 | 			addq %rsi,%rcx 			# rcx -= 4
+0x0d9: 30f6ffffffffffffffff | 			irmovq $-1,%rsi
+0x0e3: 6063                 | 			addq %rsi,%rbx			# rbx--
+0x0e5: 74b500000000000000   | 			jne loop
+0x0ee: 2054                 | End: 		rrmovq %rbp,%rsp
+0x0f0: b05f                 | 			popq %rbp
+0x0f2: 90                   | 			ret
+                            |  
+                            | # The stack starts here and grows to lower addresses 
+0x100:                      | 			.pos 0x100
+0x100:                      | Stack:
+                            | 
+                            | 

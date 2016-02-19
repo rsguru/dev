@@ -1,0 +1,98 @@
+#
+# name:Renato Scheuer 
+.pos 0
+		
+#destination and length
+	irmovq Stack,%rsp		
+	rrmovq %rsp,%rbp		
+
+	irmovq $3,%rdx	#we have 3 elements so we move a 3 into rdx
+	pushq	%rdx	
+
+	irmovq dest,%rdx
+	pushq %rdx
+	
+	irmovq src,%rdx
+	pushq %rdx
+
+	call copy_block
+	halt
+
+.align 8
+# Source block
+src:
+	.quad 0x00a
+	.quad 0x0b0
+	.quad 0xc00
+# Destination block
+dest:
+	.quad 0x111
+	.quad 0x222
+	.quad 0x333
+
+
+
+copy_block:
+	#### code by hand
+	
+	pushq 	%rbp 	#build the stack
+	rrmovq 	%rsp, %rbp
+	irmovq 	$16, %rsi
+	subq   	%rsi,%rsp
+	irmovq 	$0,%rsi		#initializing with zero the result
+	rmmovq 	%rsi, -8(%rbp)	
+	jmp	L10  				
+	
+
+L11:
+	mrmovq	8(%rbp),%rax			
+	mrmovq	(%rax),%rax
+	rmmovq	%rax, -4(%rbp)
+
+	irmovq	$4,%rsi	
+	mrmovq  8(%rbp),%rdi #store the source into %rdi
+	addq	%rsi, %rdi			#incrementing my source
+	rmmovq	%rdi,8(%rbp)
+
+	mrmovq	12(%rbp),%rax	#storing destination into %rax
+	mrmovq	-4(%rbp), %rdx				
+	rmmovq	%rdx, (%rax)
+	
+	irmovq 	$4, %rsi
+	mrmovq	12(%rbp),%rdi
+	addq	%rsi, %rdi
+	rmmovq	%rdi,12(%rbp)
+	
+	mrmovq	-4(%rbp),%rax
+
+	mrmovq	-8(%rbp), %rsi			
+	xorq	%rax,%rsi    	
+	rmmovq	%rsi,-8(%rbp)	
+	
+	irmovq $1,%rsi			#save 1 into %rsi
+	mrmovq 16(%rbp),%rdi
+	subq   %rsi,%rdi	 #subtracting %rsi from %rdi (%rdi is #length)
+	rmmovq %rdi,16(%rbp)			
+	
+
+L10:
+	irmovq $0,%rsi
+	mrmovq 	16(%rbp),%rdi
+	
+	subq	%rsi, %rdi	#condition codes
+	rmmovq %rdi,16(%rbp)
+	
+	jg	L11
+	mrmovq	-8(%rbp), %rax
+	popq	%rbp`
+	ret
+
+.pos 0x200
+Stack:
+
+#
+
+
+
+
+

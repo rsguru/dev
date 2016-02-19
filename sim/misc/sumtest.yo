@@ -1,0 +1,43 @@
+                            | # Initial code
+0x000:                      | .pos 0
+0x000: 30f40002000000000000 | 	irmovq Stack,%rsp
+0x00a: 2045                 | 	rrmovq %rsp,%rbp
+0x00c: 30f22800000000000000 | 	irmovq ele1,%rdx
+0x016: a02f                 | 	pushq %rdx
+0x018: 805800000000000000   | 	call sum_list
+0x021: 00                   | 	halt
+                            | # Sample linked list
+0x028:                      | .align 8
+0x028:                      | 	ele1:
+0x028: 0a00000000000000     | 	.quad 0x00a
+0x030: 3800000000000000     | 	.quad ele2
+0x038:                      | ele2:
+0x038: b000000000000000     | 	.quad 0x0b0
+0x040: 4800000000000000     | 	.quad ele3
+0x048:                      | ele3:
+0x048: 000c000000000000     | 	.quad 0xc00
+0x050: 0000000000000000     | 	.quad 0
+                            | #### YOUR CODE GOES HERE
+0x058:                      | sum_list:
+0x058: a05f                 | 	pushq	%rbp
+0x05a: 6300                 | 	xorq	%rax, %rax
+0x05c: 2045                 | 	rrmovq	%rsp, %rbp
+0x05e: 50250800000000000000 | 	mrmovq	8(%rbp), %rdx
+0x068: 6222                 | 	andq	%rdx, %rdx
+0x06a: 739400000000000000   | 	je	L3
+                            | 	#.p2align 4,,7
+                            | 	#.p2align 3
+0x073:                      | L6:
+0x073: 50720000000000000000 | 	mrmovq (%rdx), %rdi
+0x07d: 6070                 | 	addq	%rdi, %rax
+0x07f: 50220400000000000000 | 	mrmovq	4(%rdx), %rdx
+0x089: 6222                 | 	andq	%rdx, %rdx
+0x08b: 747300000000000000   | 	jne	L6
+0x094:                      | L3:
+0x094: b05f                 | 	popq	%rbp
+0x096: 90                   | 	ret
+                            | 
+                            | 
+0x200:                      | .pos 0x200
+0x200:                      | Stack:
+                            | #Make sure to have newline after last line of code
